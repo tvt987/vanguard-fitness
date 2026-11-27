@@ -35,6 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navItems = [
     { href: '#metabolic-lab', label: t.metabolic },
+    { href: '#periodization-lab', label: t.periodization },
     { href: '#timetable', label: t.timetable },
     { href: '#specialists', label: t.trainers },
     { href: '#membership', label: t.membership },

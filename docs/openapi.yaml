@@ -1,0 +1,563 @@
+openapi: 3.1.0
+info:
+  title: Vanguard Performance Club API
+  version: 2.0.0
+  summary: Atomic class capacity locking, automatic FIFO waitlist promotion, Mifflin-St Jeor metabolic engine & 12-week ACWR-guarded mesocycle API.
+  description: |
+    Production .NET 10 Minimal API powering Vanguard Performance Club v2.0.
+    Guarantees strict mutual exclusion on studio apparatus allocation using per-class fine-grained locks,
+    idempotent HTTP booking replay via SHA-256 request fingerprinting, automatic FIFO Waitlist #1 promotion
+    upon cancellation, and deterministic sports-science metabolic + 12-week periodization computations.
+  contact:
+    name: TVT Studio — Truong Van Tinh
+    email: tinhkun102@gmail.com
+    url: https://github.com/tvt987/vanguard-fitness
+servers:
+  - url: http://localhost:8080
+    description: Local .NET 10 API runtime
+  - url: http://localhost:3000
+    description: Docker Compose Nginx reverse proxy
+tags:
+  - name: Health
+    description: Service liveness and runtime telemetry
+  - name: Studio Classes
+    description: Live studio schedule, atomic capacity locks & automatic FIFO waitlist promotion
+  - name: Metabolic & Periodization
+    description: Mifflin-St Jeor BMR/TDEE, macro splits & 12-week ACWR-guarded mesocycles
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      operationId: getHealth
+      summary: Service liveness check
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, service, version, runtime, activeClasses, timestampUtc]
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy]
+                  service:
+                    type: string
+                    example: vanguard-api
+                  version:
+                    type: string
+                    example: 2.0.0
+                  runtime:
+                    type: string
+                    example: 10.0.12
+                  activeClasses:
+                    type: integer
+                    example: 8
+                  timestampUtc:
+                    type: string
+                    format: date-time
+
+  /api/v1/classes:
+    get:
+      tags: [Studio Classes]
+      operationId: listStudioClasses
+      summary: List studio class schedule with live enrollment, capacity & waitlist counts
+      parameters:
+        - name: discipline
+          in: query
+          required: false
+          description: Optional discipline filter (hiit_lab, reformer_pilates, strength_barbell, cryo_recovery, or all)
+          schema:
+            type: string
+            enum: [all, hiit_lab, reformer_pilates, strength_barbell, cryo_recovery]
+      responses:
+        "200":
+          description: Live studio schedule snapshot
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [count, classes]
+                properties:
+                  count:
+                    type: integer
+                  classes:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StudioClassSummary"
+
+  /api/v1/classes/{classId}:
+    get:
+      tags: [Studio Classes]
+      operationId: getStudioClassDetail
+      summary: Retrieve live capacity summary and ordered FIFO waitlist queue for a studio class
+      parameters:
+        - $ref: "#/components/parameters/ClassId"
+      responses:
+        "200":
+          description: Studio class live detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StudioClassDetail"
+        "404":
+          $ref: "#/components/responses/ProblemDetails"
+
+  /api/v1/classes/{classId}/book:
+    post:
+      tags: [Studio Classes]
+      operationId: bookStudioClass
+      summary: Atomically lock a studio spot or enter FIFO waitlist with mandatory idempotency
+      description: |
+        Acquires a per-class atomic capacity lock (`SemaphoreSlim`).
+        - If capacity remains, allocates a mat and returns `201 Created` (`CONFIRMED`).
+        - If class is full and `allowWaitlist=true`, enqueues into sequential FIFO waitlist (`#1..#N`) and returns `202 Accepted` (`WAITLISTED`).
+        - If class is full and `allowWaitlist=false`, rejects with `409 Conflict`.
+        - Replaying an identical `Idempotency-Key` + payload returns `200 OK` with header `Idempotency-Replayed: true`.
+        - Reusing an `Idempotency-Key` with a different payload returns `409 Conflict`.
+      parameters:
+        - $ref: "#/components/parameters/ClassId"
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Unique client-generated idempotency key (UUID or deterministic token)
+          schema:
+            type: string
+            minLength: 1
+            example: 8d5a2e39-99b4-41c8-a0c3-14b8d19e5c10
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookClassRequest"
+      responses:
+        "201":
+          description: Spot atomically locked (CONFIRMED)
+          headers:
+            Location:
+              description: Resource URI of the created booking
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookClassResponse"
+        "202":
+          description: Class full; member placed on FIFO waitlist (WAITLISTED)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookClassResponse"
+        "200":
+          description: Idempotent replay of an earlier booking request
+          headers:
+            Idempotency-Replayed:
+              description: Set to "true" on idempotent replay
+              schema:
+                type: string
+                enum: ["true"]
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookClassResponse"
+        "400":
+          $ref: "#/components/responses/ProblemDetails"
+        "404":
+          $ref: "#/components/responses/ProblemDetails"
+        "409":
+          $ref: "#/components/responses/ProblemDetails"
+
+  /api/v1/classes/{classId}/bookings/{bookingId}:
+    delete:
+      tags: [Studio Classes]
+      operationId: cancelStudioBooking
+      summary: Cancel a booking and automatically promote FIFO Waitlist #1 to CONFIRMED
+      parameters:
+        - $ref: "#/components/parameters/ClassId"
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: bk-7a82e9c1b4f2
+      responses:
+        "200":
+          description: Booking cancelled; if a confirmed spot was vacated and waitlist was non-empty, FIFO #1 is atomically promoted to CONFIRMED
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CancelBookingResponse"
+        "404":
+          $ref: "#/components/responses/ProblemDetails"
+
+  /api/v1/metabolic/analyze:
+    post:
+      tags: [Metabolic & Periodization]
+      operationId: analyzeMetabolicProfile
+      summary: Compute Mifflin-St Jeor BMR, TDEE, goal-calibrated macros & 12-week ACWR-guarded mesocycle projection
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MetabolicAnalyzeRequest"
+      responses:
+        "200":
+          description: Deterministic metabolic & 12-week mesocycle prescription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetabolicAnalyzeResponse"
+        "400":
+          $ref: "#/components/responses/ProblemDetails"
+
+components:
+  parameters:
+    ClassId:
+      name: classId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: mon-1830-strength
+
+  responses:
+    ProblemDetails:
+      description: RFC 7807 Problem Details error payload
+      content:
+        application/problem+json:
+          schema:
+            type: object
+            properties:
+              type:
+                type: string
+              title:
+                type: string
+              status:
+                type: integer
+              detail:
+                type: string
+              classSnapshot:
+                $ref: "#/components/schemas/StudioClassSummary"
+
+  schemas:
+    BookingStatus:
+      type: string
+      enum: [CONFIRMED, WAITLISTED, CANCELLED]
+
+    StudioClassSummary:
+      type: object
+      required:
+        - classId
+        - title
+        - discipline
+        - dayOfWeek
+        - startTime
+        - durationMin
+        - coach
+        - studioZone
+        - intensity
+        - capacity
+        - enrolledCount
+        - remainingSpots
+        - waitlistCount
+        - isFull
+      properties:
+        classId:
+          type: string
+        title:
+          type: string
+        discipline:
+          type: string
+        dayOfWeek:
+          type: string
+        startTime:
+          type: string
+        durationMin:
+          type: integer
+        coach:
+          type: string
+        studioZone:
+          type: string
+        intensity:
+          type: string
+        capacity:
+          type: integer
+        enrolledCount:
+          type: integer
+        remainingSpots:
+          type: integer
+        waitlistCount:
+          type: integer
+        isFull:
+          type: boolean
+
+    WaitlistEntryView:
+      type: object
+      required: [bookingId, memberId, memberName, position, queuedAtUtc]
+      properties:
+        bookingId:
+          type: string
+        memberId:
+          type: string
+        memberName:
+          type: string
+        position:
+          type: integer
+          minimum: 1
+        queuedAtUtc:
+          type: string
+          format: date-time
+
+    StudioClassDetail:
+      type: object
+      required: [summary, waitlistQueue]
+      properties:
+        summary:
+          $ref: "#/components/schemas/StudioClassSummary"
+        waitlistQueue:
+          type: array
+          items:
+            $ref: "#/components/schemas/WaitlistEntryView"
+
+    BookingRecord:
+      type: object
+      required: [bookingId, classId, memberId, memberName, status, idempotencyKey, createdAtUtc]
+      properties:
+        bookingId:
+          type: string
+        classId:
+          type: string
+        memberId:
+          type: string
+        memberName:
+          type: string
+        status:
+          $ref: "#/components/schemas/BookingStatus"
+        waitlistPosition:
+          type: [integer, "null"]
+        idempotencyKey:
+          type: string
+        createdAtUtc:
+          type: string
+          format: date-time
+        promotedAtUtc:
+          type: [string, "null"]
+          format: date-time
+
+    BookClassRequest:
+      type: object
+      required: [memberId, memberName]
+      properties:
+        memberId:
+          type: string
+          example: VGD-PRF-4821
+        memberName:
+          type: string
+          example: Nguyen Minh Anh
+        allowWaitlist:
+          type: boolean
+          default: true
+
+    BookClassResponse:
+      type: object
+      required: [booking, classSnapshot, idempotentReplay]
+      properties:
+        booking:
+          $ref: "#/components/schemas/BookingRecord"
+        classSnapshot:
+          $ref: "#/components/schemas/StudioClassSummary"
+        idempotentReplay:
+          type: boolean
+
+    CancelBookingResponse:
+      type: object
+      required: [cancelledBookingId, classId, previousStatus, updatedWaitlist, classSnapshot]
+      properties:
+        cancelledBookingId:
+          type: string
+        classId:
+          type: string
+        previousStatus:
+          $ref: "#/components/schemas/BookingStatus"
+        promotedBooking:
+          oneOf:
+            - $ref: "#/components/schemas/BookingRecord"
+            - type: "null"
+        updatedWaitlist:
+          type: array
+          items:
+            $ref: "#/components/schemas/WaitlistEntryView"
+        classSnapshot:
+          $ref: "#/components/schemas/StudioClassSummary"
+
+    MetabolicAnalyzeRequest:
+      type: object
+      required: [sex, age, weightKg, heightCm, bodyFatPct, activityLevel, goal]
+      properties:
+        sex:
+          type: string
+          enum: [male, female]
+        age:
+          type: integer
+          minimum: 16
+          maximum: 85
+        weightKg:
+          type: number
+          minimum: 35
+          maximum: 220
+        heightCm:
+          type: number
+          minimum: 135
+          maximum: 225
+        bodyFatPct:
+          type: number
+          minimum: 5
+          maximum: 55
+        activityLevel:
+          type: string
+          enum: [sedentary, light, moderate, athlete, elite]
+        goal:
+          type: string
+          enum: [cut, recomp, lean-bulk, fat_loss, lean_recomp, hypertrophy]
+        daysPerWeek:
+          type: integer
+          minimum: 3
+          maximum: 6
+          default: 4
+        experienceLevel:
+          type: string
+          enum: [novice, intermediate, advanced]
+          default: intermediate
+        squat1RmKg:
+          type: [number, "null"]
+        bench1RmKg:
+          type: [number, "null"]
+        deadlift1RmKg:
+          type: [number, "null"]
+
+    MacroTargets:
+      type: object
+      required: [proteinG, carbsG, fatG, proteinKcal, carbsKcal, fatKcal, proteinPct, carbsPct, fatPct]
+      properties:
+        proteinG:
+          type: integer
+        carbsG:
+          type: integer
+        fatG:
+          type: integer
+        proteinKcal:
+          type: integer
+        carbsKcal:
+          type: integer
+        fatKcal:
+          type: integer
+        proteinPct:
+          type: integer
+        carbsPct:
+          type: integer
+        fatPct:
+          type: integer
+
+    WeeklyMesocyclePoint:
+      type: object
+      required:
+        - week
+        - mesocycle
+        - isDeload
+        - effectiveSets
+        - volumeDeltaFromPeakPct
+        - relativeIntensityPct
+        - targetRpe
+        - sessionLoadAu
+        - acwr
+        - projectedWeightKg
+        - projectedLeanMassKg
+        - projectedBodyFatPct
+        - squatLoadKg
+        - benchLoadKg
+        - deadliftLoadKg
+      properties:
+        week:
+          type: integer
+        mesocycle:
+          type: string
+        isDeload:
+          type: boolean
+        effectiveSets:
+          type: integer
+        volumeDeltaFromPeakPct:
+          type: number
+        relativeIntensityPct:
+          type: integer
+        targetRpe:
+          type: number
+        sessionLoadAu:
+          type: integer
+        acwr:
+          type: number
+          maximum: 1.35
+        projectedWeightKg:
+          type: number
+        projectedLeanMassKg:
+          type: number
+        projectedBodyFatPct:
+          type: number
+        squatLoadKg:
+          type: number
+        benchLoadKg:
+          type: number
+        deadliftLoadKg:
+          type: number
+
+    MetabolicAnalyzeResponse:
+      type: object
+      required:
+        - bmr
+        - tdee
+        - targetCalories
+        - dailyDeltaKcal
+        - goalNormalized
+        - activityMultiplier
+        - hydrationLiters
+        - electrolyteSodiumMg
+        - macros
+        - peakAcwr
+        - deloadDropPcts
+        - mesocycle12Week
+      properties:
+        bmr:
+          type: integer
+        tdee:
+          type: integer
+        targetCalories:
+          type: integer
+        dailyDeltaKcal:
+          type: integer
+        goalNormalized:
+          type: string
+          enum: [cut, recomp, lean-bulk]
+        activityMultiplier:
+          type: number
+        hydrationLiters:
+          type: number
+        electrolyteSodiumMg:
+          type: integer
+        macros:
+          $ref: "#/components/schemas/MacroTargets"
+        peakAcwr:
+          type: number
+          maximum: 1.35
+        deloadDropPcts:
+          type: array
+          items:
+            type: number
+        mesocycle12Week:
+          type: array
+          minItems: 12
+          maxItems: 12
+          items:
+            $ref: "#/components/schemas/WeeklyMesocyclePoint"

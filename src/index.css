@@ -2,17 +2,18 @@
 
 @layer base {
   :root {
-    --vg-bg: #f5f6f4;
+    --vg-bg: #fafaf9;
     --vg-surface: #ffffff;
-    --vg-surface-alt: #ecefe9;
-    --vg-border: #d8ddd4;
+    --vg-surface-alt: #f3f4f2;
+    --vg-border: #e2e4df;
     --vg-ink: #0a0d12;
     --vg-muted: #525d6c;
-    --vg-accent: #65a30d;
+    --vg-accent: #4d7c0f;
     --vg-accent-bright: #a3e635;
     --vg-accent-ink: #08090c;
+    --vg-signal: #dc2626;
     --vg-cryo: #0284c7;
-    --vg-strain: #ea580c;
+    --vg-strain: #dc2626;
   }
 
   .dark {
@@ -25,6 +26,7 @@
     --vg-accent: #a3e635;
     --vg-accent-bright: #a3e635;
     --vg-accent-ink: #08090c;
+    --vg-signal: #f43f5e;
     --vg-cryo: #38bdf8;
     --vg-strain: #f97316;
   }

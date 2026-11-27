@@ -56,6 +56,9 @@ export const Footer: React.FC<FooterProps> = ({ lang }) => {
               <a href="#metabolic-lab" className="hover:text-[var(--vg-accent)]">
                 {nav.metabolic}
               </a>
+              <a href="#periodization-lab" className="hover:text-[var(--vg-accent)]">
+                {nav.periodization}
+              </a>
               <a href="#timetable" className="hover:text-[var(--vg-accent)]">
                 {nav.timetable}
               </a>

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>Vanguard.Api</RootNamespace>
+    <AssemblyName>Vanguard.Api</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vanguard.Domain\Vanguard.Domain.csproj" />
+  </ItemGroup>
+</Project>

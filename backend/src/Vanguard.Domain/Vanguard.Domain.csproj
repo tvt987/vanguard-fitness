@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Vanguard.Domain</RootNamespace>
+    <AssemblyName>Vanguard.Domain</AssemblyName>
+  </PropertyGroup>
+</Project>

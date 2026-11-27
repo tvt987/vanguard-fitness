@@ -3,3 +3,8 @@ dist
 .DS_Store
 *.local
 .env
+backend/**/bin/
+backend/**/obj/
+backend/.vs/
+*.user
+TestResults/

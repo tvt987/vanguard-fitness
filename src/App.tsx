@@ -1,14 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Footer } from './components/Footer';
 import { HeroSection } from './components/HeroSection';
 import type { ClubLocationId } from './components/MembershipSection';
-import { MembershipSection } from './components/MembershipSection';
-import { MetabolicLabSection } from './components/MetabolicLabSection';
 import { Navbar } from './components/Navbar';
-import { PrintableBlueprintSheet } from './components/PrintableBlueprintSheet';
-import { SpacesSection } from './components/SpacesSection';
-import { TimetableSection } from './components/TimetableSection';
-import { TrainersSection } from './components/TrainersSection';
 import type {
   AddOnId,
   BillingCycle,
@@ -21,6 +15,7 @@ import {
 } from './engines/membership';
 import type { MetabolicInput } from './engines/metabolic';
 import { computeMetabolicProfile } from './engines/metabolic';
+import type { PeriodizationInput } from './engines/periodizationEngine';
 import type { ClassSession, TimetableBookingState } from './engines/timetable';
 import {
   bookClassSlot,
@@ -30,13 +25,48 @@ import {
 } from './engines/timetable';
 import type { Lang } from './i18n/translations';
 
-const STORAGE_KEY = 'vanguard-fitness-state-v1';
+const MetabolicLabSection = lazy(() =>
+  import('./components/MetabolicLabSection').then((m) => ({
+    default: m.MetabolicLabSection,
+  }))
+);
+const PeriodizationBuilderLab = lazy(() =>
+  import('./components/PeriodizationBuilderLab')
+);
+const SpacesSection = lazy(() =>
+  import('./components/SpacesSection').then((m) => ({
+    default: m.SpacesSection,
+  }))
+);
+const TimetableSection = lazy(() =>
+  import('./components/TimetableSection').then((m) => ({
+    default: m.TimetableSection,
+  }))
+);
+const TrainersSection = lazy(() =>
+  import('./components/TrainersSection').then((m) => ({
+    default: m.TrainersSection,
+  }))
+);
+const MembershipSection = lazy(() =>
+  import('./components/MembershipSection').then((m) => ({
+    default: m.MembershipSection,
+  }))
+);
+const PrintableBlueprintSheet = lazy(() =>
+  import('./components/PrintableBlueprintSheet').then((m) => ({
+    default: m.PrintableBlueprintSheet,
+  }))
+);
+
+const STORAGE_KEY = 'vanguard-fitness-state-v2';
 
 interface PersistedPreferences {
   lang: Lang;
   currency: CurrencyCode;
   dark: boolean;
   metabolicInput: MetabolicInput;
+  periodizationInput: PeriodizationInput;
   timetableState: TimetableBookingState;
   selectedCoachId: string;
   tierId: MembershipTierId;
@@ -51,7 +81,7 @@ interface PersistedPreferences {
 const DEFAULT_PREFS: PersistedPreferences = {
   lang: 'en',
   currency: 'VND',
-  dark: true,
+  dark: false,
   metabolicInput: {
     sex: 'male',
     age: 29,
@@ -60,6 +90,16 @@ const DEFAULT_PREFS: PersistedPreferences = {
     bodyFatPct: 17,
     activity: 'moderate',
     goal: 'lean_recomp',
+  },
+  periodizationInput: {
+    goal: 'hypertrophy_volume',
+    daysPerWeek: 4,
+    experience: 'intermediate',
+    oneRepMax: {
+      squatKg: 140,
+      benchKg: 100,
+      deadliftKg: 175,
+    },
   },
   timetableState: INITIAL_TIMETABLE_STATE,
   selectedCoachId: VANGUARD_TRAINERS[0].id,
@@ -84,6 +124,14 @@ function loadInitialPreferences(): PersistedPreferences {
         ...DEFAULT_PREFS.metabolicInput,
         ...(parsed.metabolicInput ?? {}),
       },
+      periodizationInput: {
+        ...DEFAULT_PREFS.periodizationInput,
+        ...(parsed.periodizationInput ?? {}),
+        oneRepMax: {
+          ...DEFAULT_PREFS.periodizationInput.oneRepMax,
+          ...(parsed.periodizationInput?.oneRepMax ?? {}),
+        },
+      },
       timetableState: {
         ...INITIAL_TIMETABLE_STATE,
         ...(parsed.timetableState ?? {}),
@@ -93,6 +141,26 @@ function loadInitialPreferences(): PersistedPreferences {
     return DEFAULT_PREFS;
   }
 }
+
+const SectionFallback: React.FC<{ id?: string; heightClass?: string }> = ({
+  id,
+  heightClass = 'min-h-[320px]',
+}) => (
+  <section
+    id={id}
+    className={`no-print border-b border-[var(--vg-border)] py-14 ${heightClass}`}
+    aria-busy="true"
+  >
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="h-4 w-48 animate-pulse rounded bg-[var(--vg-surface-alt)]" />
+      <div className="mt-3 h-8 w-80 max-w-full animate-pulse rounded bg-[var(--vg-surface-alt)]" />
+      <div className="mt-8 grid gap-6 lg:grid-cols-12">
+        <div className="h-64 animate-pulse rounded-2xl border border-[var(--vg-border)] bg-[var(--vg-surface)] lg:col-span-5" />
+        <div className="h-64 animate-pulse rounded-2xl border border-[var(--vg-border)] bg-[var(--vg-surface)] lg:col-span-7" />
+      </div>
+    </div>
+  </section>
+);
 
 export const App: React.FC = () => {
   const [prefs, setPrefs] = useState<PersistedPreferences>(loadInitialPreferences);
@@ -195,84 +263,106 @@ export const App: React.FC = () => {
           targetCalories={metabolicResult.targetCalories}
         />
 
-        <MetabolicLabSection
-          lang={prefs.lang}
-          input={prefs.metabolicInput}
-          onChangeInput={(metabolicInput) =>
-            setPrefs((p) => ({ ...p, metabolicInput }))
-          }
-          result={metabolicResult}
-          onPrintBlueprint={handlePrintBlueprint}
-        />
+        <Suspense fallback={<SectionFallback id="metabolic-lab" />}>
+          <MetabolicLabSection
+            lang={prefs.lang}
+            input={prefs.metabolicInput}
+            onChangeInput={(metabolicInput) =>
+              setPrefs((p) => ({ ...p, metabolicInput }))
+            }
+            result={metabolicResult}
+            onPrintBlueprint={handlePrintBlueprint}
+          />
+        </Suspense>
 
-        <SpacesSection lang={prefs.lang} />
+        <Suspense fallback={<SectionFallback id="periodization-lab" />}>
+          <PeriodizationBuilderLab
+            lang={prefs.lang}
+            input={prefs.periodizationInput}
+            onChangeInput={(periodizationInput) =>
+              setPrefs((p) => ({ ...p, periodizationInput }))
+            }
+          />
+        </Suspense>
 
-        <TimetableSection
-          lang={prefs.lang}
-          bookingState={prefs.timetableState}
-          onBook={handleBookClass}
-          onCancel={handleCancelClass}
-          onResetAll={handleResetTimetable}
-        />
+        <Suspense fallback={<SectionFallback id="sanctuaries" />}>
+          <SpacesSection lang={prefs.lang} />
+        </Suspense>
 
-        <TrainersSection
-          lang={prefs.lang}
-          currency={prefs.currency}
-          activeGoal={prefs.metabolicInput.goal}
-          selectedCoachId={prefs.selectedCoachId}
-          onSelectCoach={(selectedCoachId) =>
-            setPrefs((p) => ({ ...p, selectedCoachId }))
-          }
-        />
+        <Suspense fallback={<SectionFallback id="timetable" />}>
+          <TimetableSection
+            lang={prefs.lang}
+            bookingState={prefs.timetableState}
+            onBook={handleBookClass}
+            onCancel={handleCancelClass}
+            onResetAll={handleResetTimetable}
+          />
+        </Suspense>
 
-        <MembershipSection
-          lang={prefs.lang}
-          currency={prefs.currency}
-          tierId={prefs.tierId}
-          onSelectTier={(tierId) => setPrefs((p) => ({ ...p, tierId }))}
-          billingCycle={prefs.billingCycle}
-          onChangeBillingCycle={(billingCycle) =>
-            setPrefs((p) => ({ ...p, billingCycle }))
-          }
-          selectedAddOns={prefs.selectedAddOns}
-          onToggleAddOn={handleToggleAddOn}
-          quote={quote}
-          vietQr={vietQr}
-          memberName={prefs.memberName}
-          onChangeMemberName={(memberName) =>
-            setPrefs((p) => ({ ...p, memberName }))
-          }
-          memberEmail={prefs.memberEmail}
-          onChangeMemberEmail={(memberEmail) =>
-            setPrefs((p) => ({ ...p, memberEmail }))
-          }
-          homeClub={prefs.homeClub}
-          onChangeHomeClub={(homeClub) => setPrefs((p) => ({ ...p, homeClub }))}
-          passActivated={prefs.passActivated}
-          onActivatePass={() => setPrefs((p) => ({ ...p, passActivated: true }))}
-          assignedCoach={assignedCoach}
-          metabolicResult={metabolicResult}
-          activeBookingCount={activeBookingCount}
-          onPrintBlueprint={handlePrintBlueprint}
-        />
+        <Suspense fallback={<SectionFallback id="specialists" />}>
+          <TrainersSection
+            lang={prefs.lang}
+            currency={prefs.currency}
+            activeGoal={prefs.metabolicInput.goal}
+            selectedCoachId={prefs.selectedCoachId}
+            onSelectCoach={(selectedCoachId) =>
+              setPrefs((p) => ({ ...p, selectedCoachId }))
+            }
+          />
+        </Suspense>
+
+        <Suspense fallback={<SectionFallback id="membership" />}>
+          <MembershipSection
+            lang={prefs.lang}
+            currency={prefs.currency}
+            tierId={prefs.tierId}
+            onSelectTier={(tierId) => setPrefs((p) => ({ ...p, tierId }))}
+            billingCycle={prefs.billingCycle}
+            onChangeBillingCycle={(billingCycle) =>
+              setPrefs((p) => ({ ...p, billingCycle }))
+            }
+            selectedAddOns={prefs.selectedAddOns}
+            onToggleAddOn={handleToggleAddOn}
+            quote={quote}
+            vietQr={vietQr}
+            memberName={prefs.memberName}
+            onChangeMemberName={(memberName) =>
+              setPrefs((p) => ({ ...p, memberName }))
+            }
+            memberEmail={prefs.memberEmail}
+            onChangeMemberEmail={(memberEmail) =>
+              setPrefs((p) => ({ ...p, memberEmail }))
+            }
+            homeClub={prefs.homeClub}
+            onChangeHomeClub={(homeClub) => setPrefs((p) => ({ ...p, homeClub }))}
+            passActivated={prefs.passActivated}
+            onActivatePass={() => setPrefs((p) => ({ ...p, passActivated: true }))}
+            assignedCoach={assignedCoach}
+            metabolicResult={metabolicResult}
+            activeBookingCount={activeBookingCount}
+            onPrintBlueprint={handlePrintBlueprint}
+          />
+        </Suspense>
       </main>
 
       <Footer lang={prefs.lang} />
 
-      <PrintableBlueprintSheet
-        lang={prefs.lang}
-        currency={prefs.currency}
-        memberName={prefs.memberName}
-        memberEmail={prefs.memberEmail}
-        homeClub={prefs.homeClub}
-        passActivated={prefs.passActivated}
-        quote={quote}
-        vietQr={vietQr}
-        assignedCoach={assignedCoach}
-        metabolicInput={prefs.metabolicInput}
-        metabolicResult={metabolicResult}
-        bookingState={prefs.timetableState}
-      />
+      <Suspense fallback={null}>
+        <PrintableBlueprintSheet
+          lang={prefs.lang}
+          currency={prefs.currency}
+          memberName={prefs.memberName}
+          memberEmail={prefs.memberEmail}
+          homeClub={prefs.homeClub}
+          passActivated={prefs.passActivated}
+          quote={quote}
+          vietQr={vietQr}
+          assignedCoach={assignedCoach}
+          metabolicInput={prefs.metabolicInput}
+          metabolicResult={metabolicResult}
+          bookingState={prefs.timetableState}
+        />
+      </Suspense>
     </div>
   );
 };

@@ -4,6 +4,7 @@ export const COPY = {
   en: {
     nav: {
       metabolic: 'Metabolic Lab',
+      periodization: '12W Split Lab',
       timetable: 'Timetable',
       trainers: 'Specialists',
       membership: 'Membership',
@@ -83,8 +84,77 @@ export const COPY = {
       exportCsv: 'Export CSV (UTF-8)',
       printPlan: 'Print A4 Blueprint',
     },
+    periodization: {
+      eyebrow: '02 · 12-WEEK MESOCYCLE ARCHITECTURE',
+      title: '12-Week Periodized Split & ACWR Guard Lab',
+      subtitle:
+        'Deterministic 3-mesocycle block generator (Accumulation -> Intensification -> Peak & Deload) with built-in W4/W8/W12 deload drops (-40%) and Acute:Chronic Workload Ratio capped <= 1.35.',
+      goalLabel: 'Primary Training Block Goal',
+      daysLabel: 'Weekly Frequency',
+      expLabel: 'Athlete Classification',
+      oneRmLabel: 'Optional 1RM Anchors (kg)',
+      oneRmHint: 'Used for plate-rounded %1RM working barbell loads (2.5 kg increments)',
+      squat: 'Squat 1RM',
+      bench: 'Bench 1RM',
+      deadlift: 'Deadlift 1RM',
+      daysUnit: 'Days / Wk',
+      goals: {
+        hypertrophy_volume: {
+          label: 'Hypertrophy Volume',
+          sub: 'High Effective Sets · 68–82% 1RM',
+        },
+        powerlifting_peaking: {
+          label: 'Powerlifting 1RM Peaking',
+          sub: 'Neural Peaking · 74–94% 1RM',
+        },
+        hyrox_hybrid: {
+          label: 'HYROX Hybrid Conditioning',
+          sub: 'Force + VO2 Engine · 66–81% 1RM',
+        },
+        executive_recomp: {
+          label: 'Executive Recomp',
+          sub: 'Time-Efficient · 70–84% 1RM',
+        },
+      },
+      experiences: {
+        novice: { label: 'Novice', sub: '< 1 yr structured' },
+        intermediate: { label: 'Intermediate', sub: '1–3 yrs barbell' },
+        advanced: { label: 'Advanced', sub: '3+ yrs competitive' },
+      },
+      kpiPeakSets: 'PEAK WEEKLY SETS',
+      kpiPeakIntensity: 'PEAK %1RM',
+      kpiMaxAcwr: 'MAX ACWR GUARD',
+      kpiDeloadDrop: 'W4/W8/W12 DELOAD',
+      acwrSafeBadge: 'SAFE <= 1.35',
+      curveTitle: '12-Week Volume (Effective Sets) vs Relative Intensity (%1RM)',
+      curveSub: 'Click any week column (W1–W12) to recalibrate working weights and set counts in the split below',
+      legendSets: 'Effective Sets',
+      legendDeload: 'Deload Week (-40%)',
+      legendIntensity: 'Intensity (%1RM)',
+      weekInspectTitle: 'CALIBRATED WEEK',
+      splitTitle: 'Weekly Day-by-Day Exercise Split Breakdown',
+      muscleBalanceTitle: 'Weekly Muscle-Group Effective Set Distribution',
+      pushPullLabel: 'Push:Pull Ratio',
+      exportCsv: 'Export Plan (.CSV)',
+      exportMd: 'Export Plan (.MD)',
+      colExercise: 'Exercise',
+      colSetsReps: 'Sets × Reps',
+      colLoad: '%1RM / Target Load',
+      colRpe: 'RPE',
+      colRest: 'Rest',
+      deloadBadge: 'DELOAD WEEK',
+      buildBadge: 'PROGRESSIVE BUILD',
+      muscles: {
+        quads: 'Quads',
+        posterior_chain: 'Posterior',
+        push: 'Push',
+        pull: 'Pull',
+        core: 'Core',
+        conditioning: 'Engine',
+      },
+    },
     spaces: {
-      eyebrow: '02 · ARCHITECTURAL SANCTUARIES',
+      eyebrow: '03 · ARCHITECTURAL SANCTUARIES',
       title: 'Two Calibrated Environments. Zero Distractions.',
       card1Tag: 'FLOOR 3 & 4 · RECOVERY & ALIGNMENT',
       card1Title: 'Reformer Pilates Atelier & 4.8°C Basalt Sanctuary',
@@ -96,7 +166,7 @@ export const COPY = {
         'Competition Eleiko plates, velocity-tracking power racks, Concept2 ergometers and calibrated HYROX sled lanes.',
     },
     timetable: {
-      eyebrow: '03 · LIVE CAPACITY LOCKING',
+      eyebrow: '04 · LIVE CAPACITY LOCKING',
       title: 'Weekly Class Timetable',
       subtitle:
         'Strict small-group caps ensure bespoke biomechanical coaching. Book directly to lock your apparatus — full sessions enter live waitlist automatically.',
@@ -133,7 +203,7 @@ export const COPY = {
       estBurn: 'est.',
     },
     trainers: {
-      eyebrow: '04 · BIOMETRIC SPECIALIST PAIRING',
+      eyebrow: '05 · BIOMETRIC SPECIALIST PAIRING',
       title: 'Personal Trainer Specialty Matcher',
       subtitle:
         'Algorithms match your metabolic objective, favored discipline, and training window against our NSCA, STOTT & Ex-National coaching roster.',
@@ -152,7 +222,7 @@ export const COPY = {
       selectedCoach: 'Selected for Pass',
     },
     membership: {
-      eyebrow: '05 · MEMBERSHIP & DIGITAL PASS',
+      eyebrow: '06 · MEMBERSHIP & DIGITAL PASS',
       title: 'Engineered Tiers & Instant VietQR Activation',
       subtitle:
         'Transparent architecture with zero hidden locker fees. Switch to Annual billing to unlock 20% savings and instant initiation fee waiver.',
@@ -204,6 +274,7 @@ export const COPY = {
   vi: {
     nav: {
       metabolic: 'Lab Chuyển Hóa',
+      periodization: 'Chu Kỳ 12 Tuần',
       timetable: 'Lịch Lớp Live',
       trainers: 'Chuyên Gia PT',
       membership: 'Hội Viên',
@@ -283,8 +354,77 @@ export const COPY = {
       exportCsv: 'Xuất CSV (UTF-8)',
       printPlan: 'In Phác Đồ A4',
     },
+    periodization: {
+      eyebrow: '02 · KIẾN TRÚC CHU KỲ 12 TUẦN',
+      title: 'Bộ Lập Lịch Chu Kỳ 12 Tuần & Bảo Vệ ACWR',
+      subtitle:
+        'Sinh tự động 3 chu kỳ trung hạn (Tích Lũy -> Tăng Cường Độ -> Đạt Đỉnh & Xả Tải) tích hợp xả tải W4/W8/W12 (-40% khối lượng) và trần an toàn ACWR <= 1.35.',
+      goalLabel: 'Mục Tiêu Chu Kỳ Chính',
+      daysLabel: 'Tần Suất Tập / Tuần',
+      expLabel: 'Trình Độ Vận Động Viên',
+      oneRmLabel: 'Mức Tạ 1RM Tham Chiếu (kg)',
+      oneRmHint: 'Tự động tính mức tạ thanh đòn theo %1RM làm tròn bội số 2.5 kg',
+      squat: 'Squat 1RM',
+      bench: 'Bench 1RM',
+      deadlift: 'Deadlift 1RM',
+      daysUnit: 'Buổi / Tuần',
+      goals: {
+        hypertrophy_volume: {
+          label: 'Tăng Cơ Khối Lượng',
+          sub: 'Hiệp Hiệu Quả Cao · 68–82% 1RM',
+        },
+        powerlifting_peaking: {
+          label: 'Đạt Đỉnh 1RM Powerlifting',
+          sub: 'Bùng Nổ Thần Kinh · 74–94% 1RM',
+        },
+        hyrox_hybrid: {
+          label: 'Thể Lực Hybrid HYROX',
+          sub: 'Sức Mạnh + VO2 · 66–81% 1RM',
+        },
+        executive_recomp: {
+          label: 'Tái Cấu Trúc Doanh Nhân',
+          sub: 'Tối Ưu Thời Gian · 70–84% 1RM',
+        },
+      },
+      experiences: {
+        novice: { label: 'Nền Tảng', sub: '< 1 năm bài bản' },
+        intermediate: { label: 'Trung Cấp', sub: '1–3 năm thanh đòn' },
+        advanced: { label: 'Nâng Cao', sub: '3+ năm thi đấu' },
+      },
+      kpiPeakSets: 'ĐỈNH HIỆP / TUẦN',
+      kpiPeakIntensity: 'ĐỈNH %1RM',
+      kpiMaxAcwr: 'TRẦN ACWR AN TOÀN',
+      kpiDeloadDrop: 'XẢ TẢI W4/W8/W12',
+      acwrSafeBadge: 'AN TOÀN <= 1.35',
+      curveTitle: 'Biểu Đồ 12 Tuần: Khối Lượng (Hiệp Hiệu Quả) vs Cường Độ (%1RM)',
+      curveSub: 'Chọn bất kỳ tuần nào (W1–W12) để tự động tính lại mức tạ kg và số hiệp trong bảng lịch tập',
+      legendSets: 'Hiệp Hiệu Quả',
+      legendDeload: 'Tuần Xả Tải (-40%)',
+      legendIntensity: 'Cường Độ (%1RM)',
+      weekInspectTitle: 'TUẦN ĐANG HIỆU CHỈNH',
+      splitTitle: 'Chi Tiết Lịch Tập Từng Ngày Trong Tuần',
+      muscleBalanceTitle: 'Phân Bổ Hiệp Hiệu Quả Theo Nhóm Cơ / Tuần',
+      pushPullLabel: 'Tỷ Lệ Đẩy:Kéo',
+      exportCsv: 'Xuất Lịch (.CSV)',
+      exportMd: 'Xuất Lịch (.MD)',
+      colExercise: 'Bài Tập',
+      colSetsReps: 'Hiệp × Lần',
+      colLoad: '%1RM / Mức Tạ',
+      colRpe: 'RPE',
+      colRest: 'Nghỉ',
+      deloadBadge: 'TUẦN XẢ TẢI',
+      buildBadge: 'TĂNG TIẾN TẢI',
+      muscles: {
+        quads: 'Đùi Trước',
+        posterior_chain: 'Chuỗi Sau',
+        push: 'Đẩy',
+        pull: 'Kéo',
+        core: 'Cơ Lõi',
+        conditioning: 'Thể Lực',
+      },
+    },
     spaces: {
-      eyebrow: '02 · KHÔNG GIAN KIẾN TRÚC ĐỘC BẢN',
+      eyebrow: '03 · KHÔNG GIAN KIẾN TRÚC ĐỘC BẢN',
       title: 'Hai Phân Khu Tinh Chỉnh. Tuyệt Đối Tĩnh Lặng.',
       card1Tag: 'TẦNG 3 & 4 · PHỤC HỒI & CÂN BẰNG',
       card1Title: 'Studio Reformer Pilates & Bể Ngâm Lạnh 4.8°C',
@@ -296,7 +436,7 @@ export const COPY = {
         'Bánh tạ Eleiko chuẩn thi đấu, khung rack đo vận tốc thanh đòn, máy chèo Concept2 và đường chạy xe trượt chuẩn HYROX.',
     },
     timetable: {
-      eyebrow: '03 · KHÓA CHỖ THỜI GIAN THỰC',
+      eyebrow: '04 · KHÓA CHỖ THỜI GIAN THỰC',
       title: 'Lịch Lớp Studio Hàng Tuần',
       subtitle:
         'Giới hạn sĩ số nhỏ đảm bảo chỉnh tư thế sinh cơ học chuẩn xác. Bấm khóa chỗ ngay — lớp đầy sẽ tự động chuyển vào danh sách chờ ưu tiên.',
@@ -333,7 +473,7 @@ export const COPY = {
       estBurn: 'ước tính',
     },
     trainers: {
-      eyebrow: '04 · GHÉP ĐÔI CHUYÊN GIA SINH HỌC',
+      eyebrow: '05 · GHÉP ĐÔI CHUYÊN GIA SINH HỌC',
       title: 'Bộ Lọc Chuyên Gia PT Phù Hợp Nhất',
       subtitle:
         'Thuật toán đối chiếu mục tiêu chuyển hóa, bộ môn yêu thích và khung giờ rảnh với đội ngũ huấn luyện viên chứng chỉ NSCA, STOTT & Cựu Tuyển Quốc Gia.',
@@ -352,7 +492,7 @@ export const COPY = {
       selectedCoach: 'Đã Gắn Vào Thẻ',
     },
     membership: {
-      eyebrow: '05 · HỘI VIÊN & THẺ QR KỸ THUẬT SỐ',
+      eyebrow: '06 · HỘI VIÊN & THẺ QR KỸ THUẬT SỐ',
       title: 'So Sánh Hạng Thẻ & Kích Hoạt VietQR Tức Thì',
       subtitle:
         'Biểu phí minh bạch, không phụ phí tủ đồ. Chọn chu kỳ Năm để giảm ngay 20% và miễn hoàn toàn phí gia nhập ban đầu.',

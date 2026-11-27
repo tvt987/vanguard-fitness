@@ -1,0 +1,85 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vanguard-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: vanguard_club
+      POSTGRES_USER: vanguard
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vanguard_dev_change_me}
+    ports:
+      - "5432:5432"
+    volumes:
+      - vanguard_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vanguard -d vanguard_club"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vanguard-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: vanguard-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - vanguard_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - vanguard-net
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: vanguard-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=vanguard_club;Username=vanguard;Password=${POSTGRES_PASSWORD:-vanguard_dev_change_me}
+      ConnectionStrings__Redis: redis:6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - vanguard-net
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vanguard-web
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - vanguard-net
+
+volumes:
+  vanguard_pgdata:
+  vanguard_redisdata:
+
+networks:
+  vanguard-net:
+    driver: bridge
