@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --vg-bg: #f5f6f4;
+    --vg-surface: #ffffff;
+    --vg-surface-alt: #ecefe9;
+    --vg-border: #d8ddd4;
+    --vg-ink: #0a0d12;
+    --vg-muted: #525d6c;
+    --vg-accent: #65a30d;
+    --vg-accent-bright: #a3e635;
+    --vg-accent-ink: #08090c;
+    --vg-cryo: #0284c7;
+    --vg-strain: #ea580c;
+  }
+
+  .dark {
+    --vg-bg: #08090c;
+    --vg-surface: #101319;
+    --vg-surface-alt: #151922;
+    --vg-border: #202735;
+    --vg-ink: #e2e8f0;
+    --vg-muted: #8b98ab;
+    --vg-accent: #a3e635;
+    --vg-accent-bright: #a3e635;
+    --vg-accent-ink: #08090c;
+    --vg-cryo: #38bdf8;
+    --vg-strain: #f97316;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: var(--vg-bg);
+    color: var(--vg-ink);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    overflow-x: clip;
+  }
+
+  body {
+    background-color: var(--vg-bg);
+    color: var(--vg-ink);
+    overflow-x: clip;
+    margin: 0;
+  }
+}
+
+.font-display {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  letter-spacing: -0.025em;
+}
+
+.font-mono-num {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom sleek range input for metabolic lab sliders */
+input[type='range'].vg-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--vg-border);
+  outline: none;
+}
+
+input[type='range'].vg-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--vg-accent-bright);
+  border: 2px solid #08090c;
+  cursor: pointer;
+  box-shadow: 0 0 0 3px rgba(163, 230, 53, 0.22);
+  transition: transform 0.15s ease;
+}
+
+input[type='range'].vg-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+
+input[type='range'].vg-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--vg-accent-bright);
+  border: 2px solid #08090c;
+  cursor: pointer;
+}
+
+/* Subtle carbon grid texture */
+.vg-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Dedicated A4 Printable Sheet */
+.print-only-sheet {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #08090c !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only-sheet {
+    display: block !important;
+  }
+}
