@@ -278,6 +278,7 @@ export const App: React.FC = () => {
       <main>
         <HeroSection
           lang={prefs.lang}
+          dark={prefs.dark}
           readinessScore={readinessResult.compositeReadinessScore}
           readinessTier={readinessResult.readinessTier}
           vo2Max={readinessResult.vo2MaxMlKgMin}

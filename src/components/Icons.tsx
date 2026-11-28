@@ -189,3 +189,33 @@ export const SlidersIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
     <line x1="16" x2="16" y1="18" y2="22" />
   </svg>
 );
+
+export const OrbitIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <circle cx="12" cy="12" r="3" />
+    <ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(-24 12 12)" />
+    <ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(24 12 12)" />
+  </svg>
+);
+
+export const ScanXRayIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" />
+    <path d="M12 7v10M8 10h8M9 14h6" />
+  </svg>
+);
+
+export const AlertTriangleIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+    <line x1="12" x2="12" y1="9" y2="13" />
+    <line x1="12" x2="12.01" y1="17" y2="17" />
+  </svg>
+);
+
+export const CameraSideIcon: React.FC<IconProps> = ({ className = 'w-4 h-4' }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+    <circle cx="12" cy="13" r="3" />
+  </svg>
+);

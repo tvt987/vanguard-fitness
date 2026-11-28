@@ -49,7 +49,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <a
           href="#top"
           className="flex shrink-0 items-center gap-2.5 focus:outline-none"
-          aria-label="Vanguard Bio-Performance Club v3.0"
+          aria-label="Vanguard Bio-Performance Club v4.0"
         >
           <VanguardMark className="h-8 w-8 text-[var(--vg-ink)]" />
           <div className="flex flex-col leading-none">
@@ -58,7 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 VANGUARD
               </span>
               <span className="rounded border border-[var(--vg-border)] bg-[var(--vg-surface-alt)] px-1 py-0.5 font-mono-num text-[9px] font-bold tracking-[0.1em] text-[var(--vg-accent)]">
-                v3.0
+                v4.0
               </span>
             </div>
             <span className="font-mono-num mt-0.5 text-[9px] tracking-[0.2em] text-[var(--vg-muted)]">

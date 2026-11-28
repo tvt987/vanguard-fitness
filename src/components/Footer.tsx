@@ -100,7 +100,7 @@ export const Footer: React.FC<FooterProps> = ({ lang }) => {
         </div>
 
         <div className="mt-10 flex flex-col items-start justify-between gap-2 border-t border-[var(--vg-border)] pt-6 font-mono-num text-[11px] text-[var(--vg-muted)] sm:flex-row sm:items-center">
-          <span>© 2026 VANGUARD BIO-PERFORMANCE CLUB · V3.0</span>
+          <span>© 2026 VANGUARD BIO-PERFORMANCE CLUB · V4.0</span>
           <span>{t.builtBy}</span>
         </div>
       </div>
