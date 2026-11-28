@@ -1,4 +1,5 @@
 import React from 'react';
+import type { ReadinessTier } from '../engines/readinessEngine';
 import type { Lang } from '../i18n/translations';
 import { COPY } from '../i18n/translations';
 import { ArrowRightIcon, PulseIcon } from './Icons';
@@ -6,15 +7,33 @@ import { ArrowRightIcon, PulseIcon } from './Icons';
 interface HeroSectionProps {
   lang: Lang;
   readinessScore: number;
+  readinessTier: ReadinessTier;
+  vo2Max: number;
+  hrvMs: number;
   targetCalories: number;
 }
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
   lang,
   readinessScore,
+  readinessTier,
+  vo2Max,
+  hrvMs,
   targetCalories,
 }) => {
   const t = COPY[lang].hero;
+  const ringStroke =
+    readinessTier === 'GREEN'
+      ? '#a3e635'
+      : readinessTier === 'AMBER'
+        ? '#f59e0b'
+        : '#f43f5e';
+  const tierTextColor =
+    readinessTier === 'GREEN'
+      ? 'text-[#a3e635]'
+      : readinessTier === 'AMBER'
+        ? 'text-amber-400'
+        : 'text-rose-400';
 
   return (
     <section
@@ -52,14 +71,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             {/* Primary & Secondary Actions */}
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <a
-                href="#metabolic-lab"
+                href="#readiness-lab"
                 className="inline-flex items-center gap-2 rounded-lg bg-[#a3e635] px-5 py-3 text-sm font-bold text-[#08090c] shadow-[0_0_24px_rgba(163,230,53,0.25)] transition-all hover:brightness-105 active:scale-[0.98]"
               >
                 <span>{t.ctaPrimary}</span>
                 <ArrowRightIcon className="h-4 w-4" />
               </a>
               <a
-                href="#membership"
+                href="#metabolic-lab"
                 className="inline-flex items-center gap-2 rounded-lg border border-[var(--vg-border)] bg-[var(--vg-surface)] px-5 py-3 text-sm font-semibold text-[var(--vg-ink)] transition-colors hover:border-[var(--vg-accent)]"
               >
                 <span>{t.ctaSecondary}</span>
@@ -138,7 +157,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                           cy="22"
                           r="17"
                           fill="none"
-                          stroke="#a3e635"
+                          stroke={ringStroke}
                           strokeWidth="3.5"
                           strokeDasharray="106.8"
                           strokeDashoffset={106.8 * (1 - readinessScore / 100)}
@@ -153,8 +172,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       <div className="font-mono-num whitespace-nowrap text-[9px] tracking-[0.1em] text-[#94a3b8]">
                         {t.hudReadiness}
                       </div>
-                      <div className="font-mono-num whitespace-nowrap text-xs font-bold text-[#a3e635]">
-                        {readinessScore}% {lang === 'en' ? 'READY' : 'SẴN SÀNG'}
+                      <div className={`font-mono-num whitespace-nowrap text-xs font-bold ${tierTextColor}`}>
+                        {readinessTier} · {readinessScore}%
                       </div>
                     </div>
                   </div>
@@ -168,7 +187,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     >
                       <polyline
                         fill="none"
-                        stroke="#a3e635"
+                        stroke={ringStroke}
                         strokeWidth="1.8"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -176,7 +195,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       />
                     </svg>
                     <span className="font-mono-num text-[9px] tracking-[0.12em] text-[#94a3b8]">
-                      HRV · 58.4 VO2
+                      {hrvMs}ms HRV · {vo2Max.toFixed(1)} VO2
                     </span>
                   </div>
 

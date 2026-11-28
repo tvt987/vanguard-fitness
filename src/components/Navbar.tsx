@@ -34,6 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const t = COPY[lang].nav;
 
   const navItems = [
+    { href: '#readiness-lab', label: t.readiness },
     { href: '#metabolic-lab', label: t.metabolic },
     { href: '#periodization-lab', label: t.periodization },
     { href: '#timetable', label: t.timetable },
@@ -42,32 +43,37 @@ export const Navbar: React.FC<NavbarProps> = ({
   ];
 
   return (
-    <header className="no-print sticky top-0 z-40 border-b border-[var(--vg-border)] bg-[var(--vg-bg)]/90 backdrop-blur-md">
+    <header className="no-print sticky top-0 z-40 border-b border-[var(--vg-border)] bg-[var(--vg-bg)]/92 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <a
           href="#top"
           className="flex shrink-0 items-center gap-2.5 focus:outline-none"
-          aria-label="Vanguard Bio-Performance Club"
+          aria-label="Vanguard Bio-Performance Club v3.0"
         >
           <VanguardMark className="h-8 w-8 text-[var(--vg-ink)]" />
           <div className="flex flex-col leading-none">
-            <span className="font-display text-base font-bold tracking-[0.14em] text-[var(--vg-ink)]">
-              VANGUARD
-            </span>
-            <span className="font-mono-num text-[9px] tracking-[0.22em] text-[var(--vg-muted)]">
+            <div className="flex items-center gap-1.5">
+              <span className="font-display text-base font-bold tracking-[0.14em] text-[var(--vg-ink)]">
+                VANGUARD
+              </span>
+              <span className="rounded border border-[var(--vg-border)] bg-[var(--vg-surface-alt)] px-1 py-0.5 font-mono-num text-[9px] font-bold tracking-[0.1em] text-[var(--vg-accent)]">
+                v3.0
+              </span>
+            </div>
+            <span className="font-mono-num mt-0.5 text-[9px] tracking-[0.2em] text-[var(--vg-muted)]">
               BIO-PERFORMANCE
             </span>
           </div>
         </a>
 
         {/* Desktop Nav */}
-        <nav className="hidden items-center gap-6 lg:flex" aria-label="Main navigation">
+        <nav className="hidden items-center gap-4 xl:gap-5 lg:flex" aria-label="Main navigation">
           {navItems.map((item) => (
             <a
               key={item.href}
               href={item.href}
-              className="text-xs font-medium tracking-[0.08em] uppercase text-[var(--vg-muted)] transition-colors hover:text-[var(--vg-ink)]"
+              className="whitespace-nowrap text-[11px] font-medium tracking-[0.08em] uppercase text-[var(--vg-muted)] transition-colors hover:text-[var(--vg-ink)]"
             >
               {item.label}
             </a>
@@ -116,20 +122,28 @@ export const Navbar: React.FC<NavbarProps> = ({
             {currency === 'VND' ? 'VNĐ' : 'USD'}
           </button>
 
-          {/* Theme Toggle */}
+          {/* Swiss Performance Daylight / Obsidian Lab Mode Toggle */}
           <button
             type="button"
+            data-testid="theme-mode-toggle"
             onClick={() => setDark(!dark)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[var(--vg-border)] bg-[var(--vg-surface)] text-[var(--vg-ink)] transition-colors hover:border-[var(--vg-accent)] cursor-pointer"
-            aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-md border border-[var(--vg-border)] bg-[var(--vg-surface)] px-2 text-[var(--vg-ink)] transition-colors hover:border-[var(--vg-accent)] cursor-pointer"
+            aria-label={
+              dark
+                ? 'Switch to Swiss Performance Daylight mode'
+                : 'Switch to Obsidian Lab mode'
+            }
           >
-            {dark ? <SunIcon className="h-4 w-4" /> : <MoonIcon className="h-4 w-4" />}
+            {dark ? <SunIcon className="h-3.5 w-3.5 text-[#a3e635]" /> : <MoonIcon className="h-3.5 w-3.5" />}
+            <span className="hidden xl:inline font-mono-num text-[10px] font-semibold tracking-[0.08em] uppercase">
+              {dark ? t.obsidian : t.daylight}
+            </span>
           </button>
 
           {/* Active Bookings pill (desktop) */}
           <a
             href="#timetable"
-            className="hidden md:inline-flex items-center gap-1.5 rounded-md border border-[var(--vg-border)] bg-[var(--vg-surface)] px-2.5 py-1.5 font-mono-num text-[11px] font-semibold text-[var(--vg-ink)] transition-colors hover:border-[var(--vg-accent)]"
+            className="hidden shrink-0 whitespace-nowrap md:inline-flex items-center gap-1.5 rounded-md border border-[var(--vg-border)] bg-[var(--vg-surface)] px-2.5 py-1.5 font-mono-num text-[11px] font-semibold text-[var(--vg-ink)] transition-colors hover:border-[var(--vg-accent)]"
           >
             <span className="h-2 w-2 rounded-full bg-[#a3e635]" />
             <span>{activeBookingCount}</span>
@@ -139,9 +153,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Member Pass jump button */}
           <a
             href="#member-pass"
-            className="hidden sm:inline-flex items-center gap-1.5 rounded-md bg-[#a3e635] px-3 py-1.5 text-xs font-bold tracking-wide text-[#08090c] transition-transform hover:brightness-105 active:scale-[0.98]"
+            className="hidden shrink-0 whitespace-nowrap sm:inline-flex items-center gap-1.5 rounded-md bg-[#a3e635] px-3 py-1.5 text-xs font-bold tracking-wide text-[#08090c] transition-transform hover:brightness-105 active:scale-[0.98]"
           >
-            <QrIcon className="h-3.5 w-3.5" />
+            <QrIcon className="h-3.5 w-3.5 shrink-0" />
             <span>{t.myPass}</span>
           </a>
 

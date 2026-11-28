@@ -1,13 +1,14 @@
 openapi: 3.1.0
 info:
   title: Vanguard Performance Club API
-  version: 2.0.0
-  summary: Atomic class capacity locking, automatic FIFO waitlist promotion, Mifflin-St Jeor metabolic engine & 12-week ACWR-guarded mesocycle API.
+  version: 3.0.0
+  summary: "Equinox x WHOOP sports-science API: Karvonen polarized HR zones, blood lactate LT1/LT2 curve, autonomic HRV & ACWR readiness prescribing, atomic class capacity locking & 12-week periodization."
   description: |
-    Production .NET 10 Minimal API powering Vanguard Performance Club v2.0.
+    Production .NET 10 Minimal API powering Vanguard Performance Club v3.0.
     Guarantees strict mutual exclusion on studio apparatus allocation using per-class fine-grained locks,
     idempotent HTTP booking replay via SHA-256 request fingerprinting, automatic FIFO Waitlist #1 promotion
-    upon cancellation, and deterministic sports-science metabolic + 12-week periodization computations.
+    upon cancellation, Mifflin-St Jeor + 12-week ACWR periodization, and Equinox x WHOOP Karvonen HRR Z1-Z5,
+    Uth-Sorensen VO2 Max, exponential LT1/LT2 lactate curve & autonomic HRV/ACWR daily session auto-prescriptions.
   contact:
     name: TVT Studio — Truong Van Tinh
     email: tinhkun102@gmail.com
@@ -24,6 +25,8 @@ tags:
     description: Live studio schedule, atomic capacity locks & automatic FIFO waitlist promotion
   - name: Metabolic & Periodization
     description: Mifflin-St Jeor BMR/TDEE, macro splits & 12-week ACWR-guarded mesocycles
+  - name: Readiness & Polarized Zones
+    description: "Karvonen HRR Z1-Z5, Uth-Sorensen VO2 Max, LT1/LT2 blood lactate modeling & autonomic HRV/ACWR readiness engine"
 
 paths:
   /health:
@@ -48,7 +51,7 @@ paths:
                     example: vanguard-api
                   version:
                     type: string
-                    example: 2.0.0
+                    example: 3.0.0
                   runtime:
                     type: string
                     example: 10.0.12
@@ -211,6 +214,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MetabolicAnalyzeResponse"
+        "400":
+          $ref: "#/components/responses/ProblemDetails"
+
+  /api/v1/metabolic/readiness-zones:
+    post:
+      tags: [Readiness & Polarized Zones]
+      operationId: computeReadinessAndHeartRateZones
+      summary: "Compute Karvonen Z1-Z5 HRR zones, Uth-Sorensen VO2 Max, LT1/LT2 lactate curve & autonomic HRV/ACWR daily session auto-prescription"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReadinessZonesRequest"
+      responses:
+        "200":
+          description: "Deterministic Karvonen zones, blood lactate curve, 80/20 polarized split & GREEN/AMBER/RED readiness prescription"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessZonesResponse"
         "400":
           $ref: "#/components/responses/ProblemDetails"
 
@@ -561,3 +585,266 @@ components:
           maxItems: 12
           items:
             $ref: "#/components/schemas/WeeklyMesocyclePoint"
+
+    ReadinessZonesRequest:
+      type: object
+      required: [age, restingHr]
+      properties:
+        age:
+          type: integer
+          minimum: 18
+          maximum: 75
+          example: 31
+        restingHr:
+          type: integer
+          minimum: 38
+          maximum: 90
+          example: 52
+        customMaxHr:
+          type: [integer, "null"]
+          minimum: 130
+          maximum: 225
+          description: "Optional lab-tested Max HR override; omits to use Tanaka auto formula (208 - 0.7 * age)"
+        athleteTier:
+          type: string
+          enum: [executive_wellness, hybrid_competitor, marathon_elite]
+          default: hybrid_competitor
+        hrvTodayMs:
+          type: number
+          minimum: 15
+          maximum: 180
+          default: 82
+        hrvBaselineMs:
+          type: number
+          minimum: 20
+          maximum: 160
+          default: 76
+        sleepHours:
+          type: number
+          minimum: 4.0
+          maximum: 9.5
+          default: 7.6
+        acuteLoadAu:
+          type: number
+          minimum: 0
+          maximum: 6000
+          default: 2150
+        chronicLoadAu:
+          type: number
+          minimum: 200
+          maximum: 5000
+          default: 1980
+        subjectiveReadiness:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 8
+
+    KarvonenZoneDto:
+      type: object
+      required: [zone, code, name, pctHrrMin, pctHrrMax, minBpm, maxBpm, weeklyMinutes, weeklySharePct, lactateRangeMmol, fuelSystem]
+      properties:
+        zone:
+          type: integer
+          minimum: 1
+          maximum: 5
+        code:
+          type: string
+          enum: [Z1, Z2, Z3, Z4, Z5]
+        name:
+          type: string
+        pctHrrMin:
+          type: integer
+        pctHrrMax:
+          type: integer
+        minBpm:
+          type: integer
+        maxBpm:
+          type: integer
+        weeklyMinutes:
+          type: integer
+        weeklySharePct:
+          type: integer
+        lactateRangeMmol:
+          type: string
+        fuelSystem:
+          type: string
+
+    PolarizedSplitSummaryDto:
+      type: object
+      required: [totalWeeklyMinutes, lowIntensityMinutes, tempoMinutes, highIntensityMinutes, moderateAndHighMinutes, lowIntensityPct, highIntensityPct]
+      properties:
+        totalWeeklyMinutes:
+          type: integer
+        lowIntensityMinutes:
+          type: integer
+        tempoMinutes:
+          type: integer
+        highIntensityMinutes:
+          type: integer
+        moderateAndHighMinutes:
+          type: integer
+        lowIntensityPct:
+          type: integer
+          example: 80
+        highIntensityPct:
+          type: integer
+          example: 20
+
+    LactateCurvePointDto:
+      type: object
+      required: [pctHrr, bpm, lactateMmol, zoneCode]
+      properties:
+        pctHrr:
+          type: integer
+        bpm:
+          type: integer
+        lactateMmol:
+          type: number
+        zoneCode:
+          type: string
+          enum: [Z1, Z2, Z3, Z4, Z5]
+
+    LactateThresholdMarkerDto:
+      type: object
+      required: [label, pctHrr, bpm, lactateMmol, description]
+      properties:
+        label:
+          type: string
+          enum: [LT1, LT2]
+        pctHrr:
+          type: integer
+        bpm:
+          type: integer
+        lactateMmol:
+          type: number
+        description:
+          type: string
+
+    TelemetryDayPointDto:
+      type: object
+      required: [dayLabel, hrvMs, acwr, readinessEst]
+      properties:
+        dayLabel:
+          type: string
+        hrvMs:
+          type: integer
+        acwr:
+          type: number
+        readinessEst:
+          type: integer
+
+    DailySessionPrescriptionDto:
+      type: object
+      required: [tier, code, headline, targetZone, detail, volumeModifierPct]
+      properties:
+        tier:
+          type: string
+          enum: [GREEN, AMBER, RED]
+        code:
+          type: string
+          enum: [PEAK_OUTPUT, MODIFY_AEROBIC, RECOVER_RESTORATIVE]
+        headline:
+          type: string
+        targetZone:
+          type: string
+        detail:
+          type: string
+        volumeModifierPct:
+          type: integer
+
+    ReadinessZonesResponse:
+      type: object
+      required:
+        - age
+        - restingHr
+        - maxHr
+        - maxHrSource
+        - heartRateReserve
+        - athleteTier
+        - vo2MaxMlKgMin
+        - vo2Percentile
+        - vo2Rating
+        - zones
+        - polarizedSplit
+        - lactateCurve
+        - lt1
+        - lt2
+        - hrvTodayMs
+        - hrvBaselineMs
+        - hrvDeltaPct
+        - acwr
+        - acwrBand
+        - acwrLabel
+        - compositeReadinessScore
+        - readinessTier
+        - prescription
+        - telemetry7Day
+      properties:
+        age:
+          type: integer
+        restingHr:
+          type: integer
+        maxHr:
+          type: integer
+        maxHrSource:
+          type: string
+          enum: [tanaka_auto, custom_override]
+        heartRateReserve:
+          type: integer
+        athleteTier:
+          type: string
+          enum: [executive_wellness, hybrid_competitor, marathon_elite]
+        vo2MaxMlKgMin:
+          type: number
+        vo2Percentile:
+          type: integer
+        vo2Rating:
+          type: string
+          enum: [Superior, Excellent, Good, Fair, Developing]
+        zones:
+          type: array
+          minItems: 5
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/KarvonenZoneDto"
+        polarizedSplit:
+          $ref: "#/components/schemas/PolarizedSplitSummaryDto"
+        lactateCurve:
+          type: array
+          minItems: 12
+          maxItems: 12
+          items:
+            $ref: "#/components/schemas/LactateCurvePointDto"
+        lt1:
+          $ref: "#/components/schemas/LactateThresholdMarkerDto"
+        lt2:
+          $ref: "#/components/schemas/LactateThresholdMarkerDto"
+        hrvTodayMs:
+          type: integer
+        hrvBaselineMs:
+          type: integer
+        hrvDeltaPct:
+          type: number
+        acwr:
+          type: number
+        acwrBand:
+          type: string
+          enum: [undertrained, optimal, caution, high_injury_risk]
+        acwrLabel:
+          type: string
+        compositeReadinessScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        readinessTier:
+          type: string
+          enum: [GREEN, AMBER, RED]
+        prescription:
+          $ref: "#/components/schemas/DailySessionPrescriptionDto"
+        telemetry7Day:
+          type: array
+          minItems: 7
+          maxItems: 7
+          items:
+            $ref: "#/components/schemas/TelemetryDayPointDto"

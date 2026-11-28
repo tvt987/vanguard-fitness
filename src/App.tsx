@@ -16,6 +16,11 @@ import {
 import type { MetabolicInput } from './engines/metabolic';
 import { computeMetabolicProfile } from './engines/metabolic';
 import type { PeriodizationInput } from './engines/periodizationEngine';
+import type { ReadinessZonesInput } from './engines/readinessEngine';
+import {
+  computeReadinessZones,
+  DEFAULT_READINESS_INPUT,
+} from './engines/readinessEngine';
 import type { ClassSession, TimetableBookingState } from './engines/timetable';
 import {
   bookClassSlot,
@@ -25,6 +30,9 @@ import {
 } from './engines/timetable';
 import type { Lang } from './i18n/translations';
 
+const PerformanceReadinessLab = lazy(() =>
+  import('./components/PerformanceReadinessLab')
+);
 const MetabolicLabSection = lazy(() =>
   import('./components/MetabolicLabSection').then((m) => ({
     default: m.MetabolicLabSection,
@@ -59,12 +67,13 @@ const PrintableBlueprintSheet = lazy(() =>
   }))
 );
 
-const STORAGE_KEY = 'vanguard-fitness-state-v2';
+const STORAGE_KEY = 'vanguard-fitness-state-v3';
 
 interface PersistedPreferences {
   lang: Lang;
   currency: CurrencyCode;
   dark: boolean;
+  readinessInput: ReadinessZonesInput;
   metabolicInput: MetabolicInput;
   periodizationInput: PeriodizationInput;
   timetableState: TimetableBookingState;
@@ -82,6 +91,7 @@ const DEFAULT_PREFS: PersistedPreferences = {
   lang: 'en',
   currency: 'VND',
   dark: false,
+  readinessInput: DEFAULT_READINESS_INPUT,
   metabolicInput: {
     sex: 'male',
     age: 29,
@@ -120,6 +130,10 @@ function loadInitialPreferences(): PersistedPreferences {
     return {
       ...DEFAULT_PREFS,
       ...parsed,
+      readinessInput: {
+        ...DEFAULT_READINESS_INPUT,
+        ...(parsed.readinessInput ?? {}),
+      },
       metabolicInput: {
         ...DEFAULT_PREFS.metabolicInput,
         ...(parsed.metabolicInput ?? {}),
@@ -177,6 +191,11 @@ export const App: React.FC = () => {
       // Ignore storage quota / private-mode restrictions
     }
   }, [prefs]);
+
+  const readinessResult = useMemo(
+    () => computeReadinessZones(prefs.readinessInput),
+    [prefs.readinessInput]
+  );
 
   const metabolicResult = useMemo(
     () => computeMetabolicProfile(prefs.metabolicInput),
@@ -259,9 +278,23 @@ export const App: React.FC = () => {
       <main>
         <HeroSection
           lang={prefs.lang}
-          readinessScore={metabolicResult.readinessScore}
+          readinessScore={readinessResult.compositeReadinessScore}
+          readinessTier={readinessResult.readinessTier}
+          vo2Max={readinessResult.vo2MaxMlKgMin}
+          hrvMs={readinessResult.hrvTodayMs}
           targetCalories={metabolicResult.targetCalories}
         />
+
+        <Suspense fallback={<SectionFallback id="readiness-lab" heightClass="min-h-[420px]" />}>
+          <PerformanceReadinessLab
+            lang={prefs.lang}
+            input={prefs.readinessInput}
+            result={readinessResult}
+            onChangeInput={(readinessInput) =>
+              setPrefs((p) => ({ ...p, readinessInput }))
+            }
+          />
+        </Suspense>
 
         <Suspense fallback={<SectionFallback id="metabolic-lab" />}>
           <MetabolicLabSection

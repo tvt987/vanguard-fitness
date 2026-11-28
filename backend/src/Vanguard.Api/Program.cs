@@ -26,6 +26,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSingleton<IClassBookingEngine, AtomicClassBookingService>();
 builder.Services.AddSingleton<IMetabolicAnalyzerService, MetabolicAnalyzerService>();
+builder.Services.AddSingleton<IReadinessZonesService, ReadinessZonesService>();
 
 var app = builder.Build();
 
@@ -39,7 +40,7 @@ app.MapGet("/health", (IClassBookingEngine engine) =>
     {
         status = "healthy",
         service = "vanguard-api",
-        version = "2.0.0",
+        version = "3.0.0",
         runtime = Environment.Version.ToString(),
         activeClasses = classes.Count,
         timestampUtc = DateTimeOffset.UtcNow,
@@ -81,6 +82,22 @@ v1.MapPost("/metabolic/analyze", (
     {
         return Results.Problem(
             title: "Invalid metabolic analysis request",
+            detail: error ?? "Validation failed.",
+            statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    return Results.Ok(result);
+});
+
+v1.MapPost("/metabolic/readiness-zones", (
+    [FromBody] ReadinessZonesRequest request,
+    IReadinessZonesService readinessService) =>
+{
+    var (result, error) = readinessService.Compute(request);
+    if (error is not null || result is null)
+    {
+        return Results.Problem(
+            title: "Invalid readiness & heart-rate zones request",
             detail: error ?? "Validation failed.",
             statusCode: StatusCodes.Status400BadRequest);
     }

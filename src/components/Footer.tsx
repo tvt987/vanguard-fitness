@@ -53,6 +53,9 @@ export const Footer: React.FC<FooterProps> = ({ lang }) => {
               {t.hoursVal}
             </p>
             <div className="mt-3 flex flex-wrap gap-3 text-xs font-medium text-[var(--vg-ink)]">
+              <a href="#readiness-lab" className="hover:text-[var(--vg-accent)]">
+                {nav.readiness}
+              </a>
               <a href="#metabolic-lab" className="hover:text-[var(--vg-accent)]">
                 {nav.metabolic}
               </a>
@@ -97,7 +100,7 @@ export const Footer: React.FC<FooterProps> = ({ lang }) => {
         </div>
 
         <div className="mt-10 flex flex-col items-start justify-between gap-2 border-t border-[var(--vg-border)] pt-6 font-mono-num text-[11px] text-[var(--vg-muted)] sm:flex-row sm:items-center">
-          <span>© 2026 VANGUARD BIO-PERFORMANCE CLUB</span>
+          <span>© 2026 VANGUARD BIO-PERFORMANCE CLUB · V3.0</span>
           <span>{t.builtBy}</span>
         </div>
       </div>
